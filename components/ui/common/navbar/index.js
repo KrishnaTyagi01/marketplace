@@ -1,14 +1,14 @@
 import { useWeb3 } from "@components/providers";
 import Link from "next/link";
 import { Button } from "@components/ui/common";
+import { useAccount } from "@components/hooks/web3";
+import { useRouter } from "next/router";
 
-import { useAccount } from "@components/hooks/web3/useAccount";
-
-export default function Footer() {
-  const { connect, isLoading, isWeb3Loaded } = useWeb3();
+export default function Navbar() {
+  const { connect, isLoading, requireInstall } = useWeb3();
   const { account } = useAccount();
+  const { pathname } = useRouter();
 
-  console.log("Account: ", account);
   return (
     <section>
       <div className="relative pt-6 px-4 sm:px-6 lg:px-8">
@@ -41,19 +41,11 @@ export default function Footer() {
                 <Button disabled={true} onClick={connect}>
                   Loading...
                 </Button>
-              ) : isWeb3Loaded ? (
-                account.data ? (
-                  <Button
-                    className="cursor-default hover:opacity-100"
-                    hoverable={false}
-                  >
-                    Hi there
-                    {account.isAdmin ? " admin" : ""}
-                  </Button>
-                ) : (
-                  <Button onClick={connect}>Connect</Button>
-                )
-              ) : (
+              ) : account.data ? (
+                <Button hoverable={false} className="cursor-default">
+                  Hi there {account.isAdmin && "Admin"}
+                </Button>
+              ) : requireInstall ? (
                 <Button
                   onClick={() =>
                     window.open("https://metamask.io/download.html", "_blank")
@@ -61,12 +53,14 @@ export default function Footer() {
                 >
                   Install Metamask
                 </Button>
+              ) : (
+                <Button onClick={connect}>Connect</Button>
               )}
             </div>
           </div>
         </nav>
       </div>
-      {account.data && (
+      {account.data && !pathname.includes("/marketplace") && (
         <div className="flex justify-end pt-1 sm:px-6 lg:px-8">
           <div className="text-white bg-indigo-600 rounded-md p-2">
             {account.data}
