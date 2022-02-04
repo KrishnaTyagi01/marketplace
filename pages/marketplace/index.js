@@ -2,17 +2,22 @@ import { useWeb3 } from "@components/providers";
 import { Hero } from "@components/ui/common";
 import { CourseList, CourseCard } from "@components/ui/course";
 import { BaseLayout } from "@components/ui/layout";
-import { WalletBar } from "@components/ui/web3";
+import { EthRates, WalletBar } from "@components/ui/web3";
 import { getAllCourses } from "@content/courses/fetcher";
 import { useAccount, useNetwork } from "@components/hooks/web3";
+import { Button, Modal } from "@components/ui/common";
+import { OrderModal } from "@components/ui/order";
+import { useState } from "react";
+import { useEthPrice } from "./../../components/hooks/useEthPrice";
 
 export default function Marketplace({ courses }) {
   const { web3, isLoading } = useWeb3();
-  // console.log("Data: ", data);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+
   const { account } = useAccount();
   const { network } = useNetwork();
+  const { eth } = useEthPrice();
 
-  console.log("Network: ", network);
   return (
     <>
       <div className="py-4">
@@ -25,13 +30,36 @@ export default function Marketplace({ courses }) {
             hasInitialResponse: network.hasInitialResponse,
           }}
         />
-        "Current" {`${network.data}`}
+        {/* "Current" {`${network.data}`}
         "Target" {`${network.target}`}
-        "Is Supported" {`${network.isSupported}`}
+        "Is Supported" {`${network.isSupported}`} */}
       </div>
+
+      <EthRates eth={eth.data} ethPerItem={eth.perItem} />
       <CourseList courses={courses}>
-        {(course) => <CourseCard key={course.id} course={course} />}
+        {(course) => (
+          <CourseCard
+            key={course.id}
+            course={course}
+            Footer={() => (
+              <div className="mt-4">
+                <Button
+                  onClick={() => setSelectedCourse(course)}
+                  variant="lightPurple"
+                >
+                  Purchase
+                </Button>
+              </div>
+            )}
+          />
+        )}
       </CourseList>
+      {selectedCourse && (
+        <OrderModal
+          course={selectedCourse}
+          onClose={() => setSelectedCourse(null)}
+        />
+      )}
     </>
   );
 }
