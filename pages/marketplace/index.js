@@ -1,51 +1,35 @@
 import { useWeb3 } from "@components/providers";
-import { Hero } from "@components/ui/common";
-import { CourseList, CourseCard } from "@components/ui/course";
-import { BaseLayout } from "@components/ui/layout";
+import { Breadcrumbs, Button } from "@components/ui/common";
+import { CourseCard, CourseList } from "@components/ui/course";
+import { MarketHeader } from "@components/ui/marketplace";
+import { OrderModal } from "@components/ui/order";
 import { EthRates, WalletBar } from "@components/ui/web3";
 import { getAllCourses } from "@content/courses/fetcher";
-import { useAccount, useNetwork } from "@components/hooks/web3";
-import { Button, Modal } from "@components/ui/common";
-import { OrderModal } from "@components/ui/order";
 import { useState } from "react";
-import { useEthPrice } from "./../../components/hooks/useEthPrice";
+import { useWalletInfo } from "./../../components/hooks/web3/index";
 
 export default function Marketplace({ courses }) {
   const { web3, isLoading } = useWeb3();
   const [selectedCourse, setSelectedCourse] = useState(null);
-
-  const { account } = useAccount();
-  const { network } = useNetwork();
-  const { eth } = useEthPrice();
+  const { account, network, canPurchaseCourse } = useWalletInfo();
 
   return (
     <>
       <div className="py-4">
-        <WalletBar
-          address={account.data}
-          network={{
-            data: network.data,
-            target: network.target,
-            isSupported: network.isSupported,
-            hasInitialResponse: network.hasInitialResponse,
-          }}
-        />
-        {/* "Current" {`${network.data}`}
-        "Target" {`${network.target}`}
-        "Is Supported" {`${network.isSupported}`} */}
+        <MarketHeader />
       </div>
-
-      <EthRates eth={eth.data} ethPerItem={eth.perItem} />
       <CourseList courses={courses}>
         {(course) => (
           <CourseCard
             key={course.id}
             course={course}
+            disabled={!canPurchaseCourse}
             Footer={() => (
               <div className="mt-4">
                 <Button
                   onClick={() => setSelectedCourse(course)}
                   variant="lightPurple"
+                  disabled={!canPurchaseCourse}
                 >
                   Purchase
                 </Button>
